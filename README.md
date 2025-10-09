@@ -1,7 +1,5 @@
 # 🎨 EpicMint - NFT Marketplace & Story Platform
 
-![EpicMint Banner](https://picsum.photos/seed/epicmint/1200/400)
-
 ## 🌟 Overview
 
 EpicMint is a comprehensive NFT marketplace and story platform that allows users to create, mint, trade, and share digital stories as NFTs. Built with modern web technologies, it provides a seamless experience for creators and collectors in the Web3 space.
