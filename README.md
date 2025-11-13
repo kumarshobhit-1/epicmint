@@ -1843,7 +1843,7 @@ Special thanks once again to:
 ## 🔗 Quick Links
 
 - 🌐 **[Live Demo](https://epicmintminor.vercel.app/)**
-- 📖 **[Documentation](./docs/)**
+- 📖 **[Documentation](https://drive.google.com/file/d/15VqS10XftBh_V76ZIK0wzAQ5vPbck7R-/view?usp=drive_link)**
 - 🐛 **[Report Bug](https://github.com/kumarshobhit-1/epicmint/issues)**
 - 💡 **[Request Feature](https://github.com/kumarshobhit-1/epicmint/issues)**
 
