@@ -671,11 +671,13 @@ Transfer completed successfully!
                 <ExternalLink className="h-4 w-4" />
                 View on IPFS
               </Button>
-              <ShareButton 
+              
+              {/* <ShareButton 
                 title={nft.title}
                 description={nft.description}
                 url={typeof window !== 'undefined' ? window.location.href : `https://epicmint.com/nft/${hash}`}
-              />
+              /> */}
+              
             </div>
           </div>
 
