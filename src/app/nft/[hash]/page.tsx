@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ethers } from 'ethers'; // 1. IMPORT ethers library
 import { addToFavorites, removeFromFavorites, getUserProfile } from '@/lib/db-service';
 import Link from 'next/link';
+import { ShareButton } from '@/components/share-button';
 
 // Safe date formatting helper
 const formatSafeDate = (timestamp: number | string | Date, formatStr: string = "PPp"): string => {
@@ -670,6 +671,11 @@ Transfer completed successfully!
                 <ExternalLink className="h-4 w-4" />
                 View on IPFS
               </Button>
+              <ShareButton 
+                title={nft.title}
+                description={nft.description}
+                url={typeof window !== 'undefined' ? window.location.href : `https://epicmint.com/nft/${hash}`}
+              />
             </div>
           </div>
 
@@ -677,16 +683,23 @@ Transfer completed successfully!
           <div className="space-y-6">
             {/* Title and Basic Info */}
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="gap-1">
-                  <Palette className="h-3 w-3" />
-                  {nft.category}
-                </Badge>
-                {nft.isListed && (
-                  <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                    On Sale
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1">
+                    <Palette className="h-3 w-3" />
+                    {nft.category}
                   </Badge>
-                )}
+                  {nft.isListed && (
+                    <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                      On Sale
+                    </Badge>
+                  )}
+                </div>
+                <ShareButton 
+                  title={nft.title}
+                  description={nft.description}
+                  url={typeof window !== 'undefined' ? window.location.href : `https://epicmint.com/nft/${hash}`}
+                />
               </div>
               <h1 className="font-headline text-4xl lg:text-5xl mb-3 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 {nft.title}
