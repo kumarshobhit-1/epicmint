@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const contactReasons = [
   'General Questions',
@@ -65,32 +67,32 @@ export default function ContactForm() {
     setIsSubmitting(true);
 
     try {
-      // Send to your API endpoint
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      // Save directly to Firestore
+      const submissionData = {
+        name: formData.name,
+        email: formData.email,
+        reason: formData.reason,
+        message: formData.message,
+        subscribe: formData.subscribe,
+        status: 'unread',
+        createdAt: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, 'contact-submissions'), submissionData);
+
+      toast({
+        title: "Message Sent Successfully!",
+        description: `Thank you ${formData.name}, we'll get back to you within 24 hours.`,
       });
 
-      if (response.ok) {
-        toast({
-          title: "Message Sent Successfully!",
-          description: `Thank you ${formData.name}, we'll get back to you within 24 hours.`,
-        });
-
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
-          reason: 'General Questions',
-          message: '',
-          subscribe: false
-        });
-      } else {
-        throw new Error('Failed to send message');
-      }
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        reason: 'General Questions',
+        message: '',
+        subscribe: false
+      });
 
     } catch (error) {
       console.error('Contact form error:', error);
