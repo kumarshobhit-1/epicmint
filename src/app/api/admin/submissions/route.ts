@@ -1,14 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  updateDoc, 
+  deleteDoc,
+  query,
+  orderBy,
+  Timestamp 
+} from 'firebase/firestore';
 
 // Get all submissions
 export async function GET() {
   try {
-    const submissionsFile = path.join(process.cwd(), 'data', 'contact-submissions.json');
-    const data = await fs.readFile(submissionsFile, 'utf8');
-    const submissions = JSON.parse(data);
-    return NextResponse.json(submissions.reverse());
+    const q = query(
+      collection(db, 'contact-submissions'),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const submissions = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        timestamp: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      };
+    });
+    
+    return NextResponse.json(submissions);
   } catch (error) {
     console.error('Error reading submissions:', error);
     return NextResponse.json([]);
@@ -28,38 +50,23 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const submissionsFile = path.join(process.cwd(), 'data', 'contact-submissions.json');
-    let submissions = [];
-    
-    try {
-      const fileData = await fs.readFile(submissionsFile, 'utf8');
-      submissions = JSON.parse(fileData);
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Submissions file not found' },
-        { status: 404 }
-      );
-    }
-
-    const submissionIndex = submissions.findIndex((sub: any) => sub.id === id);
-    
-    if (submissionIndex === -1) {
-      return NextResponse.json(
-        { error: 'Submission not found' },
-        { status: 404 }
-      );
-    }
+    const submissionRef = doc(db, 'contact-submissions', id);
+    let updateData: any = {};
 
     // Handle different actions
     switch (action) {
       case 'markAsRead':
-        submissions[submissionIndex].status = 'read';
-        submissions[submissionIndex].readAt = new Date().toISOString();
+        updateData = {
+          status: 'read',
+          readAt: Timestamp.now(),
+        };
         break;
         
       case 'markAsDone':
-        submissions[submissionIndex].status = 'done';
-        submissions[submissionIndex].completedAt = new Date().toISOString();
+        updateData = {
+          status: 'done',
+          completedAt: Timestamp.now(),
+        };
         break;
         
       case 'reply':
@@ -70,12 +77,14 @@ export async function PATCH(request: NextRequest) {
           );
         }
         
-        submissions[submissionIndex].reply = {
-          message: data.replyMessage,
-          repliedAt: new Date().toISOString(),
-          repliedBy: data.repliedBy || 'Admin'
+        updateData = {
+          reply: {
+            message: data.replyMessage,
+            repliedAt: new Date().toISOString(),
+            repliedBy: data.repliedBy || 'Admin'
+          },
+          status: 'replied',
         };
-        submissions[submissionIndex].status = 'replied';
         break;
         
       default:
@@ -85,13 +94,11 @@ export async function PATCH(request: NextRequest) {
         );
     }
 
-    // Save updated submissions
-    await fs.writeFile(submissionsFile, JSON.stringify(submissions, null, 2));
+    await updateDoc(submissionRef, updateData);
 
     return NextResponse.json({ 
       success: true, 
       message: `Submission ${action} successfully`,
-      submission: submissions[submissionIndex]
     });
 
   } catch (error) {
@@ -107,7 +114,7 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = parseInt(searchParams.get('id') || '');
+    const id = searchParams.get('id');
 
     if (!id) {
       return NextResponse.json(
@@ -116,31 +123,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const submissionsFile = path.join(process.cwd(), 'data', 'contact-submissions.json');
-    let submissions = [];
-    
-    try {
-      const fileData = await fs.readFile(submissionsFile, 'utf8');
-      submissions = JSON.parse(fileData);
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Submissions file not found' },
-        { status: 404 }
-      );
-    }
-
-    const originalLength = submissions.length;
-    submissions = submissions.filter((sub: any) => sub.id !== id);
-    
-    if (submissions.length === originalLength) {
-      return NextResponse.json(
-        { error: 'Submission not found' },
-        { status: 404 }
-      );
-    }
-
-    // Save updated submissions
-    await fs.writeFile(submissionsFile, JSON.stringify(submissions, null, 2));
+    const submissionRef = doc(db, 'contact-submissions', id);
+    await deleteDoc(submissionRef);
 
     return NextResponse.json({ 
       success: true, 
