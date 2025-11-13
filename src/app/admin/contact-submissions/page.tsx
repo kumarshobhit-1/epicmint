@@ -7,15 +7,28 @@ import { Mail, Calendar, User, MessageSquare, Download, Trash2, Send, Loader2, R
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  updateDoc, 
+  deleteDoc,
+  query,
+  orderBy,
+  Timestamp,
+  onSnapshot 
+} from 'firebase/firestore';
 
 interface ContactSubmission {
-  id: number;
+  id: string;
   name: string;
   email: string;
   reason: string;
   message: string;
   subscribe: boolean;
   timestamp: string;
+  createdAt?: string;
   status?: string;
   reply?: {
     message: string;
@@ -29,16 +42,30 @@ interface ContactSubmission {
 export default function ContactSubmissionsPage() {
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
-  const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
-  const [showReplyFor, setShowReplyFor] = useState<number | null>(null);
+  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
+  const [showReplyFor, setShowReplyFor] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Fetch submissions
+  // Fetch submissions from Firestore directly
   const fetchSubmissions = async () => {
     try {
-      const response = await fetch('/api/admin/submissions');
-      const data = await response.json();
-      setSubmissions(data);
+      const q = query(
+        collection(db, 'contact-submissions'),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const submissionsData = querySnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          timestamp: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+        } as ContactSubmission;
+      });
+      
+      setSubmissions(submissionsData);
     } catch (error) {
       console.error('Error fetching submissions:', error);
       toast({
@@ -50,34 +77,46 @@ export default function ContactSubmissionsPage() {
   };
 
   useEffect(() => {
-    fetchSubmissions();
+    // Real-time listener for submissions
+    const q = query(
+      collection(db, 'contact-submissions'),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const submissionsData = snapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          timestamp: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+        } as ContactSubmission;
+      });
+      
+      setSubmissions(submissionsData);
+    }, (error) => {
+      console.error('Error listening to submissions:', error);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Mark as read
-  const handleMarkAsRead = async (id: number) => {
+  const handleMarkAsRead = async (id: string) => {
     setLoading(prev => ({ ...prev, [`read-${id}`]: true }));
     
     try {
-      const response = await fetch('/api/admin/submissions', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id,
-          action: 'markAsRead'
-        }),
+      const submissionRef = doc(db, 'contact-submissions', id);
+      await updateDoc(submissionRef, {
+        status: 'read',
+        readAt: Timestamp.now(),
       });
 
-      if (response.ok) {
-        await fetchSubmissions();
-        toast({
-          title: "Success",
-          description: "Submission marked as read!",
-        });
-      } else {
-        throw new Error('Failed to mark as read');
-      }
+      toast({
+        title: "Success",
+        description: "Submission marked as read!",
+      });
     } catch (error) {
       console.error('Error marking as read:', error);
       toast({
@@ -91,30 +130,20 @@ export default function ContactSubmissionsPage() {
   };
 
   // Mark as done
-  const handleMarkAsDone = async (id: number) => {
+  const handleMarkAsDone = async (id: string) => {
     setLoading(prev => ({ ...prev, [`done-${id}`]: true }));
     
     try {
-      const response = await fetch('/api/admin/submissions', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id,
-          action: 'markAsDone'
-        }),
+      const submissionRef = doc(db, 'contact-submissions', id);
+      await updateDoc(submissionRef, {
+        status: 'done',
+        completedAt: Timestamp.now(),
       });
 
-      if (response.ok) {
-        await fetchSubmissions();
-        toast({
-          title: "Success",
-          description: "Submission marked as done!",
-        });
-      } else {
-        throw new Error('Failed to mark as done');
-      }
+      toast({
+        title: "Success",
+        description: "Submission marked as done!",
+      });
     } catch (error) {
       console.error('Error marking as done:', error);
       toast({
@@ -128,39 +157,29 @@ export default function ContactSubmissionsPage() {
   };
 
   // Send reply
-  const handleSendReply = async (id: number) => {
+  const handleSendReply = async (id: string) => {
     const replyMessage = replyTexts[id]?.trim();
     if (!replyMessage) return;
 
     setLoading(prev => ({ ...prev, [`reply-${id}`]: true }));
     
     try {
-      const response = await fetch('/api/admin/submissions', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
+      const submissionRef = doc(db, 'contact-submissions', id);
+      await updateDoc(submissionRef, {
+        reply: {
+          message: replyMessage,
+          repliedAt: new Date().toISOString(),
+          repliedBy: 'Admin'
         },
-        body: JSON.stringify({
-          id,
-          action: 'reply',
-          data: {
-            replyMessage,
-            repliedBy: 'Admin'
-          }
-        }),
+        status: 'replied',
       });
 
-      if (response.ok) {
-        await fetchSubmissions();
-        setReplyTexts(prev => ({ ...prev, [id]: '' }));
-        setShowReplyFor(null);
-        toast({
-          title: "Success",
-          description: "Reply sent successfully!",
-        });
-      } else {
-        throw new Error('Failed to send reply');
-      }
+      setReplyTexts(prev => ({ ...prev, [id]: '' }));
+      setShowReplyFor(null);
+      toast({
+        title: "Success",
+        description: "Reply sent successfully!",
+      });
     } catch (error) {
       console.error('Error sending reply:', error);
       toast({
@@ -174,23 +193,17 @@ export default function ContactSubmissionsPage() {
   };
 
   // Delete submission
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     setLoading(prev => ({ ...prev, [`delete-${id}`]: true }));
     
     try {
-      const response = await fetch(`/api/admin/submissions?id=${id}`, {
-        method: 'DELETE',
-      });
+      const submissionRef = doc(db, 'contact-submissions', id);
+      await deleteDoc(submissionRef);
 
-      if (response.ok) {
-        await fetchSubmissions();
-        toast({
-          title: "Success",
-          description: "Submission deleted successfully!",
-        });
-      } else {
-        throw new Error('Failed to delete submission');
-      }
+      toast({
+        title: "Success",
+        description: "Submission deleted successfully!",
+      });
     } catch (error) {
       console.error('Error deleting submission:', error);
       toast({
