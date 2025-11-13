@@ -14,6 +14,7 @@ import { signOut } from 'firebase/auth';
 import { SearchForm } from './search-form';
 import DeploymentHistory from './deployment-history';
 import { ThemeToggle } from './theme-toggle';
+import ConnectWallet from './connect-wallet';
 
 // Shadcn UI and Lucide Icons
 import { Button } from './ui/button';
@@ -78,6 +79,7 @@ export default function Header() {
 
       {/* Theme Toggle & Deployment History */}
       <div className="flex items-center gap-2 pt-2">
+        <ConnectWallet />
         <DeploymentHistory />
         <ThemeToggle />
       </div>
@@ -178,6 +180,7 @@ export default function Header() {
                   Contract
                 </Link>
               </Button>
+              <ConnectWallet />
               <DeploymentHistory />
               <ThemeToggle />
               
