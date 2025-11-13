@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,46 +22,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const fs = require('fs').promises;
-    const path = require('path');
-    
-    const submission = {
+    // Save to Firestore
+    const submissionData = {
       name,
       email,
       reason,
       message,
-      subscribe,
-      timestamp: new Date().toISOString(),
-      id: Date.now()
+      subscribe: subscribe || false,
+      status: 'unread',
+      createdAt: serverTimestamp(),
     };
 
-    try {
-      const submissionsDir = path.join(process.cwd(), 'data');
-      await fs.mkdir(submissionsDir, { recursive: true });
-      
-      const submissionsFile = path.join(submissionsDir, 'contact-submissions.json');
-      let submissions = [];
-      
-      try {
-        const data = await fs.readFile(submissionsFile, 'utf8');
-        submissions = JSON.parse(data);
-      } catch (error) {
-        submissions = [];
-      }
-      
-      submissions.push(submission);
-      
-      await fs.writeFile(submissionsFile, JSON.stringify(submissions, null, 2));
-      
-      
-    } catch (fileError) {
-      console.error('Error saving submission to file:', fileError);
-    }
+    const docRef = await addDoc(collection(db, 'contact-submissions'), submissionData);
 
     return NextResponse.json({ 
       success: true, 
       message: 'Contact form submitted successfully',
-      id: submission.id
+      id: docRef.id
     });
 
   } catch (error) {
