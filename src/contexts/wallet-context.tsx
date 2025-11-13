@@ -49,6 +49,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      // Just use eth_requestAccounts - it will show popup if needed
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const address = accounts[0];
       
