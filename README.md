@@ -19,7 +19,7 @@ A Web3 platform and AI-powered decentralized NFT marketplace that bridges creati
 
 **Institution:** BBD University, Lucknow  
 **Program:** IOTBC-3A | IBM (Minor Project)  
-**Duration:** August 2024 - November 2025  
+**Duration:** July 2025 - November 2025  
 **Status:** ✅ Completed & Deployed  
 
 ### 🎯 Problem Statement
