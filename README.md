@@ -19,7 +19,7 @@ A Web3 platform and AI-powered decentralized NFT marketplace that bridges creati
 
 **Institution:** BBD University, Lucknow  
 **Program:** IOTBC-3A | IBM (Minor Project)  
-**Duration:** July 2025 - November 2025  
+**Duration:** August 2024 - November 2025  
 **Status:** ✅ Completed & Deployed  
 
 ### 🎯 Problem Statement
@@ -1434,14 +1434,6 @@ We're grateful to the open-source community and teams behind:
 - GitHub Discussions
 - Dev.to articles and tutorials
 
-### Personal Thanks
-
-**To our families** - For understanding our late nights, supporting our passion for technology, and believing in our vision.
-
-**To our friends** - For testing our application, providing honest feedback, and sharing our excitement.
-
-**To the open-source community** - For building amazing tools and sharing knowledge freely.
-
 ### Inspiration
 
 This project was inspired by:
@@ -1753,17 +1745,6 @@ export const Button: React.FC<ButtonProps> = ({
 - Use the built-in contact form in the application
 - Admin panel for direct support
 
-**Email:**
-- Technical queries: [your-email@example.com]
-- Business inquiries: [business@example.com]
-
-### Community
-
-**Social Media:**
-- LinkedIn: [Team member profiles]
-- Twitter: [@epicmint] (if available)
-- Discord: [Community server] (if available)
-
 ### Contributing
 
 We welcome contributions! See [Contributing Guidelines](#contributing-guidelines) above.
@@ -1777,7 +1758,7 @@ This project is licensed under the **MIT License**.
 ```
 MIT License
 
-Copyright (c) 2024-2025 EpicMint Team
+Copyright (c) 2025 EpicMint Team
 - Suryansh Soni
 - Shobhit Kumar
 - Abhikalp Shikhar
@@ -1854,7 +1835,6 @@ Special thanks once again to:
 - **Dr. Praveen Sir** for exceptional mentorship
 - **BBD University** for infrastructure and support
 - **IBM** for the Minor Project opportunity
-- **Our families** for unwavering support
 - **The open-source community** for amazing tools
 - **Every tester and feedback provider**
 
@@ -1862,11 +1842,10 @@ Special thanks once again to:
 
 ## 🔗 Quick Links
 
-- 🌐 **[Live Demo](#)** (Coming soon)
-- 📖 **[Documentation](./docs/)** (If available)
+- 🌐 **[Live Demo](https://epicmintminor.vercel.app/)**
+- 📖 **[Documentation](./docs/)**
 - 🐛 **[Report Bug](https://github.com/kumarshobhit-1/epicmint/issues)**
 - 💡 **[Request Feature](https://github.com/kumarshobhit-1/epicmint/issues)**
-- 📧 **[Contact Us](#support--contact)**
 
 ---
 
@@ -1888,7 +1867,7 @@ Special thanks once again to:
 
 **EpicMint** | **Web3** | **NFT Marketplace** | **AI-Powered** | **Creator Economy**
 
-© 2024-2025 EpicMint Team. All Rights Reserved.
+© 2025 EpicMint Team. All Rights Reserved.
 
 </div>
 
